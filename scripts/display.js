@@ -1,23 +1,26 @@
-// TODO: allow for data types
-// select correct data from input json file
-(function selectData() {
+$(document).ready(function () {
 	var sensor = window.location.search.substr(1).split("=")[1];
 	var sensorData = [];
-	console.log(sensor);
 	var data = "data.json";
 	//TODO: check for correct input
 	$.getJSON(data, function (result) {
-		$.each(result, function (i, field) {
-			$.each(field, function (i, data) {
-				sensorData.push({
-					"time": data["time"],
-					"sensorData": data[sensor]
+		// console.log(result);
+		$.each(result, function (i, sensorField) {
+			// console.log(sensorField);
+			if (sensorField.sensor == sensor) {
+				$.each(sensorField.data, function (i, data) {
+					sensorData.push({
+						"time": data["time"],
+						"value": data["value"],
+						"coordinate" : data["coordinate"]
+					});
 				});
-			});
-			display(sensorData);
+			}
 		});
 	});
-})();
+	console.log(sensorData);
+	//display(sensorData);
+});
 
 // display data in 3d space
 function display(data) {
@@ -61,7 +64,7 @@ function display(data) {
 	var texts = scene.selectAll("a-text.bar").data(subData);
 	texts.enter().append("a-text").attr("class", "bar")
 		.attr("position", function (d, i) {
-			var x = -5+ (i * spacing);
+			var x = -5 + (i * spacing);
 			var y = 4;
 			var z = -3.5;
 

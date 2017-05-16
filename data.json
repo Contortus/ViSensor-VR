@@ -1,106 +1,122 @@
-{
-	"sensor" : "temperature",
-	"begin" : "",
-	"end" : "",
+[{
+	"sensor" : "light",
+	"begin" : "2017-05-01 19:27:29",
+	"end" : "2017-05-01 19:27:30",
 	"data": [{
 			"value": 2,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 35,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 19,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 98,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 10,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 57,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 70,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 32,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 92,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 46,
 			"time": "2017-05-01 19:27:29",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 51,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 10,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 98,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 81,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 10,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 44,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 65,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 45,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 27,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		},
 		{
 			"value": 34,
 			"time": "2017-05-01 19:27:30",
-			"coordinates" : "2 0 2"
+			"coordinate" : "2 0 2"
 		}
 	]
-}
+},
+{
+	"sensor" : "temperature",
+	"begin" : "2017-05-01 19:27:29",
+	"end" : "2017-05-01 19:27:30",
+	"data": [{
+			"value": 2,
+			"time": "2017-05-01 19:27:29",
+			"coordinate" : "4 0 4"
+		},
+		{
+			"value": 35,
+			"time": "2017-05-01 19:27:29",
+			"coordinate" : "4 0 4"
+		}
+	]
+}]
