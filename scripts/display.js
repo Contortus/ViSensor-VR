@@ -17,7 +17,6 @@ $(document).ready(function () {
 			}
 		});
 
-		// console.log(sensorData);
 		display(sensorData);
 	});
 });
@@ -25,13 +24,13 @@ $(document).ready(function () {
 // display data in 3d space
 function display(data) {
 
-	console.log(data);
 	var subData = {};
+	var dataArray = [];
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
 		.domain([0, 100])
-		.range([1, 8]);
+		.range([0.5, 4]);
 
 	var scene = d3.select("a-scene");
 
@@ -47,29 +46,20 @@ function display(data) {
 		}
 	}
 
-	console.log(subData);
+	for (var key in subData) {
+		dataArray.push(subData[key]);
+	}
 
-	// create text-fields for displaying values
-	// var texts = scene.selectAll("a-text.bar").data(subData);
-	// texts.enter().append("a-text").attr("class", "bar")
-	// 	.attr("position", d[position])
-	// 	.attr("value", function (d, i) {
-	// 		return Math.round(d["value"] * 100) / 100 + "\n" + d["time"];
-	// 	}).attr("color", "red").attr("align", "center");
-
-	// // TODO: create spheres
-	var spheres = scene.selectAll("a-sphere.datapoint").data(subData);
+	// create spheres
+	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 	spheres.enter().append("a-sphere").attr("class", "datapoint")
 		.attr("position", function (d, i) {
-			return d["position"];
-		})
-		.attr("radius", function (d, i) {
-			console.log("radius: " +  hscale(d["value"]));
+			return d["coordinate"];
+		}).attr("radius", function (d, i) {
 			return hscale(d["value"]);
 		});
-	
-	console.log(spheres);
 
+	// TODO: add texts for spheres
+	
 	// TODO: implement time change
-	//render();
 }
