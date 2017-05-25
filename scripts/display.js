@@ -36,16 +36,15 @@ function display(data) {
 
 	// define subData as all newest values with disjunct position values
 	for (var i = 0; i < data.length; i++) {
-		// if subData doesn't contain coordinate or older value for that coordianate add datapoint
+		// if subData doesn't contain coordinate or older value for that coordianate, add datapoint
 		if (!subData[data[i]["coordinate"]]) {
-			console.log("not included");
 			subData[data[i]["coordinate"]] = data[i];
 		} else if (Date.parse(subData[data[i]["coordinate"]]["time"]) > Date.parse(data[i]["time"])) {
-			console.log("newer timestamp");
 			subData[data[i]["coordinate"]] = data[i];
 		}
 	}
 
+	// move data to array
 	for (var key in subData) {
 		dataArray.push(subData[key]);
 	}
@@ -60,6 +59,14 @@ function display(data) {
 		});
 
 	// TODO: add texts for spheres
-	
+
+	// var texts = scene.selectAll("a-text.datapoint").data(dataArray);
+	// texts.enter().append("a-text").attr("class", "datapoint")
+	// 	.attr("position", function (d, i) {
+	// 		var coordinates = d["coordinates"].substr(1).split(" ");
+
+	// 		 console.log(coordinates);
+	// 	});
+
 	// TODO: implement time change
 }
