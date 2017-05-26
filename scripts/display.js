@@ -60,6 +60,33 @@ function display(data) {
 		});
 
 	// TODO: add texts for spheres
-	
+
 	// TODO: implement time change
+
+	// update-loop
+	function render() {
+		requestAnimationFrame(render);
+
+		var cameraPos = {
+			"x": 0,
+			"y": 0,
+			"z": 0
+		};
+
+		var cameraRotation = cameraPos;
+
+		if (d3.select('a-camera').attr("position") != null)
+			cameraPos = d3.select('a-camera').attr("position");
+
+		if (d3.select('a-camera').attr("rotation") != null)
+			cameraRotation = d3.select('a-camera').attr("rotation");
+
+		console.log(cameraRotation);
+
+		d3.select('a-camera').attr('rotation', function () {
+			cameraRotation['y'];
+			return cameraRotation;
+		});
+	}
+	render();
 }
