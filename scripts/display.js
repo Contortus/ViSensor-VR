@@ -6,13 +6,13 @@ var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
 function connecthandler(e) {
-	controllers[gamepad.index] = gamepad;
+	controllers[e.gamepad.index] = gamepad;
 
 	requestAnimationFrame(updateStatus);
 }
 
 function disconnecthandler(e) {
-	delete controllers[gamepad.index];
+	delete controllers[e.gamepad.index];
 }
 
 function scangamepads() {
@@ -141,15 +141,23 @@ function display(data) {
 				return cameraRotation;
 			});
 
-			d3.select('a-camera').attr('position', function () {
-				if (Math.abs(lr_axis) >= CONTROLLER_THRESHOLD)
-					cameraPos['x'] += lr_axis * MOVEMENT_SPEED;
-				return cameraPos;
-			});
+			console.log(cameraRotation['y']);
 
 			d3.select('a-camera').attr('position', function () {
-				if (Math.abs(fb_axis) >= CONTROLLER_THRESHOLD)
-					cameraPos['z'] += fb_axis * MOVEMENT_SPEED;
+				var radian = -(cameraRotation['y']) * (Math.PI / 180);
+				//console.log(radian);
+
+				if (Math.abs(fb_axis) >= CONTROLLER_THRESHOLD) {
+					cameraPos['z'] -= (-fb_axis * MOVEMENT_SPEED * Math.cos(radian));
+					cameraPos['x'] += (-fb_axis * MOVEMENT_SPEED * Math.sin(radian));
+				}
+
+				if (Math.abs(lr_axis) >= CONTROLLER_THRESHOLD) {
+					radian = -(cameraRotation['y']-90) * (Math.PI / 180);
+					cameraPos['z'] -= (lr_axis * MOVEMENT_SPEED * Math.cos(radian));
+					cameraPos['x'] += (lr_axis * MOVEMENT_SPEED * Math.sin(radian));
+				}
+
 				return cameraPos;
 			});
 
