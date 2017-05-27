@@ -6,7 +6,7 @@ var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
 function connecthandler(e) {
-	controllers[e.gamepad.index] = gamepad;
+	controllers[e.gamepad.index] = e.gamepad;
 
 	requestAnimationFrame(updateStatus);
 }
@@ -22,7 +22,7 @@ function scangamepads() {
 			if (gamepads[i].index in controllers) {
 				controllers[gamepads[i].index] = gamepads[i];
 			} else {
-				controllers[gamepad.index] = gamepad;
+				controllers[gamepads[i].index] = gamepads[i];
 				requestAnimationFrame(updateStatus);
 			}
 		}
