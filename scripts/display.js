@@ -1,16 +1,18 @@
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 
-var CONTROLLER_THRESHOLD = 0.3;
+var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks will be ignored
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
+// this function is called whenever a controller is connected
 function connecthandler(e) {
-	controllers[e.gamepad.index] = e.gamepad;
+	controllers[e.gamepad.index] = e.gamepad; // the controller is saved in the controller list under its unique identifier
 
 	requestAnimationFrame(updateStatus);
 }
 
+// this function is called whenever a controller gets disconnected
 function disconnecthandler(e) {
 	delete controllers[e.gamepad.index];
 }
@@ -37,8 +39,9 @@ if (!haveEvents) {
 	setInterval(scangamepads, 500);
 }
 
+// TODO: change according to new format
 $(document).ready(function () {
-	var sensor = window.location.search.substr(1).split("=")[1];
+	var sensor = window.location.search.substr(1).split("=")[1]; // gets sensor name  via http-get
 	var sensorData = [];
 	var data = "data.json";
 	$.getJSON(data, function (result) {
@@ -64,7 +67,7 @@ $(document).ready(function () {
 function display(data) {
 
 	var subData = {};
-	var dataArray = [];
+	var dataArray = []; // mainly the same as `subData` but compatible with d3
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
@@ -107,14 +110,14 @@ function display(data) {
 	// 		 console.log(coordinates);
 	// 	});
 
-	// TODO: implement time change
+	// TODO: implement up-down movement
 
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
 
 		if (!haveEvents)
-			scangamepads();
+			scangamepads();	// check for gamepads
 
 		var cameraPos = {
 			"x": 0,
@@ -141,7 +144,7 @@ function display(data) {
 			var fb_axis = axes[1];
 			var rot_axis = axes[2];
 
-
+			// update camera rotation 
 			d3.select('a-camera').attr('rotation', function () {
 				if (Math.abs(rot_axis) >= CONTROLLER_THRESHOLD)
 					cameraRotation['y'] -= rot_axis * ROTATION_SPEED;
@@ -150,9 +153,9 @@ function display(data) {
 
 			console.log(cameraRotation['y']);
 
+			// update camera position
 			d3.select('a-camera').attr('position', function () {
 				var radian = -(cameraRotation['y']) * (Math.PI / 180);
-				//console.log(radian);
 
 				if (Math.abs(fb_axis) >= CONTROLLER_THRESHOLD) {
 					cameraPos['z'] -= (-fb_axis * MOVEMENT_SPEED * Math.cos(radian));
