@@ -165,19 +165,28 @@ function display(data) {
 			var controller = controllers[j];
 
 			var axes = controller["axes"];
+			var buttons = controller["buttons"];
 
 			var lr_axis = axes[0];
 			var fb_axis = axes[1];
 			var rot_axis = axes[2];
+			var tilt_axis = axes[3];
+
+			var down_button_pressed = buttons[6].pressed;
+			var up_button_pressed = buttons[7].pressed;
+			var down_button = buttons[6].value;
+			var up_button = buttons[7].value;
 
 			// update camera rotation
 			d3.select('a-camera').attr('rotation', function () {
 				if (Math.abs(rot_axis) >= CONTROLLER_THRESHOLD)
 					cameraRotation['y'] -= rot_axis * ROTATION_SPEED;
+				if (Math.abs(tilt_axis) >= CONTROLLER_THRESHOLD)
+					cameraRotation['x'] -= tilt_axis * ROTATION_SPEED;
 				return cameraRotation;
 			});
 
-			console.log(cameraRotation['y']);
+			// console.log(cameraRotation['y']);
 
 			// update camera position
 			d3.select('a-camera').attr('position', function () {
@@ -193,6 +202,12 @@ function display(data) {
 					cameraPos['z'] -= (lr_axis * MOVEMENT_SPEED * Math.cos(radian));
 					cameraPos['x'] += (lr_axis * MOVEMENT_SPEED * Math.sin(radian));
 				}
+
+				if (down_button_pressed == true)
+					cameraPos["y"] -= MOVEMENT_SPEED * down_button;
+
+				if (up_button_pressed == true)
+					cameraPos["y"] += MOVEMENT_SPEED * up_button;
 
 				return cameraPos;
 			});
