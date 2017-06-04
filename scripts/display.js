@@ -5,11 +5,13 @@ var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks wil
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
+var MINIMAL_DISTANCE = 1;
+
 // this function is called whenever a controller is connected
 function connecthandler(e) {
 	controllers[e.gamepad.index] = e.gamepad; // the controller is saved in the controller list under its unique identifier
 
-	requestAnimationFrame(updateStatus);
+	//requestAnimationFrame(updateStatus);
 }
 
 // this function is called whenever a controller gets disconnected
@@ -25,7 +27,7 @@ function scangamepads() {
 				controllers[gamepads[i].index] = gamepads[i];
 			} else {
 				controllers[gamepads[i].index] = gamepads[i];
-				requestAnimationFrame(updateStatus);
+				//requestAnimationFrame(updateStatus);
 			}
 		}
 	}
@@ -41,23 +43,37 @@ if (!haveEvents) {
 
 // TODO: change according to new format
 $(document).ready(function () {
-	var sensor = window.location.search.substr(1).split("=")[1]; // gets sensor name  via http-get
+	// gets sensor name  via http-get
+	var parameters = {};
+	var i;
+	var getItems = window.location.search.substr(1).split("?");
+
+	for (i in getItems) {
+		parameters[getItems[i].split("=")[0]] = getItems[i].split("=")[1];
+	}
+
+	if (parameters["sensor"] == "" && parameters["file"] == "")
+		return false;
+
 	var sensorData = [];
-	var data = "data.json";
+	var data = parameters["file"] + ".json";
+
 	$.getJSON(data, function (result) {
 		// console.log(result);
-		$.each(result, function (i, sensorField) {
-			// console.log(sensorField);
-			if (sensorField.sensor == sensor) {
-				$.each(sensorField.data, function (i, data) {
-					sensorData.push({
-						"time": data["time"],
-						"value": data["value"],
-						"coordinate": data["coordinate"]
-					});
-				});
-			}
+		$.each(result["session"], function (i, entry) {
+			// console.log(entry);
+			sensorData.push({
+				"sensorValue": entry[parameters["sensor"]],
+				"time": entry["time"],
+				"coordinate": {
+					"x": entry["xPos"],
+					"z": entry["yPos"],
+					"y": entry["zPos"]
+				}
+			});
 		});
+
+		// console.log(sensorData);
 
 		display(sensorData);
 	});
@@ -66,30 +82,40 @@ $(document).ready(function () {
 // display data in 3d space
 function display(data) {
 
-	var subData = {};
+	// var subData = {};
 	var dataArray = []; // mainly the same as `subData` but compatible with d3
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
-		.domain([0, 100])
-		.range([0.5, 4]);
+		.domain([0, 40])
+		.range([0, 1]);
 
 	var scene = d3.select("a-scene");
 
+	// console.log(data);
+	dataArray.push(data[0]);
+
 	// define subData as all newest values with disjunct position values
-	for (var i = 0; i < data.length; i++) {
+	for (var i = 1; i < data.length; i++) {
 		// if subData doesn't contain coordinate or older value for that coordianate, add datapoint
-		if (!subData[data[i]["coordinate"]]) {
-			subData[data[i]["coordinate"]] = data[i];
-		} else if (Date.parse(subData[data[i]["coordinate"]]["time"]) > Date.parse(data[i]["time"])) {
-			subData[data[i]["coordinate"]] = data[i];
+		if (data[i].sensorValue != 0) {
+			var currPos = data[i]["coordinate"];
+			var nearValueExists = false;
+
+			for (var j = 0; j < dataArray.length; j++) {
+				var includedPos = dataArray[j]["coordinate"];
+				var distance = Math.sqrt(Math.pow(currPos.x - includedPos.x, 2) + Math.pow(currPos.z - includedPos.z, 2) + Math.pow(currPos.y - includedPos.y, 2));
+				// console.log(distance);
+				if (distance < MINIMAL_DISTANCE)
+					nearValueExists = true
+			}
+
+			if (!nearValueExists)
+				dataArray.push(data[i]);
 		}
 	}
 
-	// move data to array
-	for (var key in subData) {
-		dataArray.push(subData[key]);
-	}
+	console.log(dataArray.length + ", " + data.length);
 
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
@@ -97,7 +123,7 @@ function display(data) {
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(d["value"]);
+			return hscale(d["sensorValue"]);
 		});
 
 	// TODO: add texts for spheres
@@ -117,7 +143,7 @@ function display(data) {
 		requestAnimationFrame(render);
 
 		if (!haveEvents)
-			scangamepads();	// check for gamepads
+			scangamepads(); // check for gamepads
 
 		var cameraPos = {
 			"x": 0,
@@ -144,7 +170,7 @@ function display(data) {
 			var fb_axis = axes[1];
 			var rot_axis = axes[2];
 
-			// update camera rotation 
+			// update camera rotation
 			d3.select('a-camera').attr('rotation', function () {
 				if (Math.abs(rot_axis) >= CONTROLLER_THRESHOLD)
 					cameraRotation['y'] -= rot_axis * ROTATION_SPEED;
@@ -163,7 +189,7 @@ function display(data) {
 				}
 
 				if (Math.abs(lr_axis) >= CONTROLLER_THRESHOLD) {
-					radian = -(cameraRotation['y']-90) * (Math.PI / 180);
+					radian = -(cameraRotation['y'] - 90) * (Math.PI / 180);
 					cameraPos['z'] -= (lr_axis * MOVEMENT_SPEED * Math.cos(radian));
 					cameraPos['x'] += (lr_axis * MOVEMENT_SPEED * Math.sin(radian));
 				}
