@@ -1,0 +1,299 @@
+{"session": [
+  {
+    "time": "2017-4-27-6-51-23",
+    "temperature": 32.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.3228943628022391,
+    "yPos": 1.1079960092872483,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-24",
+    "temperature": 23.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.7631367917445818,
+    "yPos": 1.991503359741408,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-25",
+    "temperature": 11.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.794529411550062,
+    "yPos": 1.139113249492958,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-26",
+    "temperature": 8.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.6308400616047771,
+    "yPos": -0.26005122019625304,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-27",
+    "temperature": 7.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.6084168244018909,
+    "yPos": -0.1433615700170776,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-28",
+    "temperature": 9.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.5493690378248456,
+    "yPos": -0.5423290406522483,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-29",
+    "temperature": 35.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.3154200144415566,
+    "yPos": 0.038896549270077685,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-30",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": 0.08969288862782764,
+    "yPos": 0.456756629889135,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-31",
+    "temperature": 11,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -7.474407863150401E-4,
+    "yPos": 0.5667782995165993,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-32",
+    "temperature":18,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -0.04260412100788157,
+    "yPos": 0.6156768196142437,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-33",
+    "temperature":4,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -0.07474407124647357,
+    "yPos": 0.66568666980384,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-34",
+    "temperature": 6,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -0.1360342067816961,
+    "yPos": 0.7812649898910635,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-35",
+    "temperature": 9,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -0.19881922166151064,
+    "yPos": 0.8879526692426722,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-36",
+    "temperature": 16,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -0.8961813395543591,
+    "yPos": 1.1424472397688135,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-37",
+    "temperature":5,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -4.170719694302749,
+    "yPos": -0.0600118202275155,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-38",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -7.9968694844873855,
+    "yPos": -0.28227782045599525,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-39",
+    "temperature": 13,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -10.857325521224244,
+    "yPos": -0.2633852104721086,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-40",
+    "temperature": 15,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -14.006293282561924,
+    "yPos": -0.07223645044933846,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-41",
+    "temperature": 19,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -16.6275647535903,
+    "yPos": 1.1246659598768787,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-42",
+    "temperature": 37,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -18.88483537890278,
+    "yPos": 1.1691191596067156,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-43",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -21.897022067961295,
+    "yPos": 0.9357398592483648,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-44",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -22.762554822198243,
+    "yPos": 1.8381398196864112,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-45",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -24.258929854886556,
+    "yPos": 2.0692964598608583,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-46",
+    "temperature": 9.5,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -25.82032728648487,
+    "yPos": 3.3773318699064916,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-47",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -27.92064231628054,
+    "yPos": 1.799243269626686,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-48",
+    "temperature": 11,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -29.55903587844581,
+    "yPos": 1.0468728597574284,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-49",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -30.055330562013502,
+    "yPos": 2.1859861092503863,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-50",
+    "temperature": 40,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -30.677201724780122,
+    "yPos": 2.062628479309147,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-51",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -33.334350553638544,
+    "yPos": 2.4549279693926067,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-51-52",
+    "temperature": 33,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -35.75306452955443,
+    "yPos": 3.0083703093850787,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-53-41",
+    "temperature": 0.0,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -19.85554338207611,
+    "yPos": 64.52826511949648,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-53-42",
+    "temperature": 24,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -19.85554338207611,
+    "yPos": 64.52826511949648,
+    "zPos": 1.0
+  },
+  {
+    "time": "2017-4-27-6-53-43",
+    "temperature": 12,
+    "humidity": 0.0,
+    "illuminance": 0.0,
+    "xPos": -19.85554338207611,
+    "yPos": 64.52826511949648,
+    "zPos": 1.0
+  }
+]}
