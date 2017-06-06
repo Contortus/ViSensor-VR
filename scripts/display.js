@@ -5,7 +5,7 @@ var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks wil
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
-var MINIMAL_DISTANCE = 1;
+var MINIMAL_DISTANCE = 1; // minimal distance between measuring points
 
 // this function is called whenever a controller is connected
 function connecthandler(e) {
@@ -42,8 +42,7 @@ if (!haveEvents) {
 }
 
 $(document).ready(function () {
-	// gets sensor name  via http-get
-	var parameters = {};
+	var parameters = {}; // variables declared via http-get
 	var i;
 	var getItems = window.location.search.substr(1).split("?");
 
@@ -51,12 +50,14 @@ $(document).ready(function () {
 		parameters[getItems[i].split("=")[0]] = getItems[i].split("=")[1];
 	}
 
+	// either `sensor`or `file`variable are empty
 	if (parameters["sensor"] == "" && parameters["file"] == "")
 		return false;
 
 	var sensorData = [];
-	var data = parameters["file"] + ".json";
+	var data = parameters["file"] + ".json"; // JSON-data-file
 
+	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(data, function (result) {
 		// console.log(result);
 		$.each(result["session"], function (i, entry) {
@@ -72,31 +73,26 @@ $(document).ready(function () {
 			});
 		});
 
-		// console.log(sensorData);
-
-		display(sensorData);
+		display(sensorData); //call method for displaying data in 3d-environment
 	});
 });
 
 // display data in 3d space
 function display(data) {
 
-	// var subData = {};
-	var dataArray = []; // mainly the same as `subData` but compatible with d3
+	var dataArray = []; // the filtered data that will be displayed
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
 		.domain([0, 40])
 		.range([0, 1]);
 
-	var scene = d3.select("a-scene");
+	var scene = d3.select("a-scene"); // select scene for displaying data
 
-	// console.log(data);
-	dataArray.push(data[0]);
+	dataArray.push(data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
 
-	// define subData as all newest values with disjunct position values
+	// push all data-elements that are far enough away from every other element
 	for (var i = 1; i < data.length; i++) {
-		// if subData doesn't contain coordinate or older value for that coordianate, add datapoint
 		if (data[i].sensorValue != 0) {
 			var currPos = data[i]["coordinate"];
 			var nearValueExists = false;
@@ -109,12 +105,11 @@ function display(data) {
 					nearValueExists = true
 			}
 
+			// we don't have to check for time because new values are always on top
 			if (!nearValueExists)
 				dataArray.push(data[i]);
 		}
 	}
-
-	console.log(dataArray.length + ", " + data.length);
 
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
@@ -149,16 +144,18 @@ function display(data) {
 		};
 		var j;
 
-		var cameraRotation = cameraPos;
+		var cameraRotation = cameraPos; // set everything to zero
 
+		// select camery and get camera position
 		if (d3.select('a-camera').attr("position") != null)
 			cameraPos = d3.select('a-camera').attr("position");
 
+		// get camera rotation
 		if (d3.select('a-camera').attr("rotation") != null)
 			cameraRotation = d3.select('a-camera').attr("rotation");
 
+		// go through connected controllers
 		for (j in controllers) {
-
 			var controller = controllers[j];
 
 			var axes = controller["axes"];
@@ -183,26 +180,28 @@ function display(data) {
 				return cameraRotation;
 			});
 
-			// console.log(cameraRotation['y']);
-
 			// update camera position
 			d3.select('a-camera').attr('position', function () {
-				var radian = -(cameraRotation['y']) * (Math.PI / 180);
+				var radian = -(cameraRotation['y']) * (Math.PI / 180); // convert deg to rad
 
+				// update camera position for first controller axis
 				if (Math.abs(fb_axis) >= CONTROLLER_THRESHOLD) {
 					cameraPos['z'] -= (-fb_axis * MOVEMENT_SPEED * Math.cos(radian));
 					cameraPos['x'] += (-fb_axis * MOVEMENT_SPEED * Math.sin(radian));
 				}
 
+				// update camera position for second controller axis
 				if (Math.abs(lr_axis) >= CONTROLLER_THRESHOLD) {
 					radian = -(cameraRotation['y'] - 90) * (Math.PI / 180);
 					cameraPos['z'] -= (lr_axis * MOVEMENT_SPEED * Math.cos(radian));
 					cameraPos['x'] += (lr_axis * MOVEMENT_SPEED * Math.sin(radian));
 				}
 
+				// move camera down if right trigger pressed
 				if (down_button_pressed == true)
 					cameraPos["y"] -= MOVEMENT_SPEED * down_button;
 
+				// move camera down if left trigger pressed
 				if (up_button_pressed == true)
 					cameraPos["y"] += MOVEMENT_SPEED * up_button;
 
