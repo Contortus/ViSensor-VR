@@ -41,7 +41,6 @@ if (!haveEvents) {
 	setInterval(scangamepads, 500);
 }
 
-// TODO: change according to new format
 $(document).ready(function () {
 	// gets sensor name  via http-get
 	var parameters = {};
