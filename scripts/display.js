@@ -135,8 +135,6 @@ function display(data) {
 	// 		 console.log(coordinates);
 	// 	});
 
-	// TODO: implement up-down movement
-
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
