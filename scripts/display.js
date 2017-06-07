@@ -44,7 +44,7 @@ if (!haveEvents) {
 $(document).ready(function () {
 	var parameters = {}; // variables declared via http-get
 	var i;
-	var getItems = window.location.search.substr(1).split("?");
+	var getItems = window.location.search.substr(1).split(/\?|\&/);
 
 	for (i in getItems) {
 		parameters[getItems[i].split("=")[0]] = getItems[i].split("=")[1];
@@ -55,7 +55,7 @@ $(document).ready(function () {
 		return false;
 
 	var sensorData = [];
-	var data = parameters["file"] + ".json"; // JSON-data-file
+	var data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
 
 	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(data, function (result) {
