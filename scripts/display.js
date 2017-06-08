@@ -201,7 +201,7 @@ function display(data) {
 				if (down_button_pressed == true)
 					cameraPos["y"] -= MOVEMENT_SPEED * down_button;
 
-				// move camera down if left trigger pressed
+				// move camera up if left trigger pressed
 				if (up_button_pressed == true)
 					cameraPos["y"] += MOVEMENT_SPEED * up_button;
 
