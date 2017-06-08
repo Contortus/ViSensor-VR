@@ -84,8 +84,8 @@ function display(data) {
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
-		.domain([0, 40])
-		.range([0, 1]);
+		.domain([0, 15])
+		.range([0, 2]);
 
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
@@ -117,7 +117,7 @@ function display(data) {
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(d["sensorValue"]);
+			return hscale(Math.log(d["sensorValue"]));
 		});
 
 	// TODO: add texts for spheres
