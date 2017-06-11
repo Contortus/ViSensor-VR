@@ -57,6 +57,12 @@ $(document).ready(function () {
 	var sensorData = [];
 	var data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
 
+	// include obj-file in index.html
+	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
+	var entity = '<a-entity obj-model="obj: #room-obj"></a-entity>';
+
+	$('a-assets').append(asset);
+
 	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(data, function (result) {
 		// console.log(result);
