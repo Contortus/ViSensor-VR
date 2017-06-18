@@ -73,7 +73,7 @@ $(document).ready(function () {
 		return false;
 
 	var sensorData = [];
-	var data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
+	var m_Data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
 
 	// include obj-file in index.html
 	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
@@ -82,7 +82,7 @@ $(document).ready(function () {
 	$('a-assets').append(asset);
 
 	// save data for requested sensor in `sensorData`-variable
-	$.getJSON(data, function (result) {
+	$.getJSON(m_Data, function (result) {
 		// console.log(result);
 		$.each(result["session"], function (i, entry) {
 			// console.log(entry);
@@ -102,7 +102,7 @@ $(document).ready(function () {
 });
 
 // display data in 3d space
-function display(data) {
+function display(m_Data) {
 
 	var dataArray = []; // the filtered data that will be displayed
 
@@ -113,12 +113,12 @@ function display(data) {
 
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
-	dataArray.push(data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
+	dataArray.push(m_Data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
 
 	// push all data-elements that are far enough away from every other element
-	for (var i = 1; i < data.length; i++) {
-		if (data[i].sensorValue != 0) {
-			var currPos = data[i]["coordinate"];
+	for (var i = 1; i < m_Data.length; i++) {
+		if (m_Data[i].sensorValue != 0) {
+			var currPos = m_Data[i]["coordinate"];
 			var nearValueExists = false;
 
 			for (var j = 0; j < dataArray.length; j++) {
@@ -131,7 +131,7 @@ function display(data) {
 
 			// we don't have to check for time because new values are always on top
 			if (!nearValueExists)
-				dataArray.push(data[i]);
+				dataArray.push(m_Data[i]);
 		}
 	}
 
