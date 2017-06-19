@@ -80,21 +80,23 @@ $(document).ready(function () {
 	var entity = '<a-entity obj-model="obj: #room-obj"></a-entity>';
 
 	$('a-assets').append(asset);
+	$('a-scene').append(entity);
 
 	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(m_Data, function (result) {
 		// console.log(result);
 		$.each(result["session"], function (i, entry) {
 			// console.log(entry);
-			sensorData.push({
-				"sensorValue": entry[parameters["sensor"]],
-				"time": entry["time"],
-				"coordinate": {
-					"x": entry["xPos"],
-					"z": entry["yPos"],
-					"y": entry["zPos"]
-				}
-			});
+			if (entry[parameters["sensor"]] != 0)
+				sensorData.push({
+					"sensorValue": entry[parameters["sensor"]],
+					"time": entry["time"],
+					"coordinate": {
+						"x": entry["xPos"],
+						"z": (-1 * entry["yPos"]),
+						"y": entry["zPos"]
+					}
+				});
 		});
 
 		display(sensorData); //call method for displaying data in 3d-environment
