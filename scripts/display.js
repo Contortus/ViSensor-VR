@@ -1,20 +1,20 @@
 // Copyright (C) 2017 Jean Büsche
-//
+// 
 // This file is part of visensor-vr.
-//
+// 
 // visensor-vr is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // visensor-vr is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with visensor-vr.  If not, see <http://www.gnu.org/licenses/>.
-//
+// 
 
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
@@ -73,22 +73,32 @@ $(document).ready(function () {
 		return false;
 
 	var sensorData = [];
-	var data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
+	var m_Data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
+
+	// include obj-file in index.html
+	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
+	var asset_mtl = '<a-asset-item id="room-mtl" src="Obj/' + 'env.mtl"></a-asset-item>';
+	var entity = '<a-entity obj-model="obj: #room-obj; mtl: #room-mtl"></a-entity>';
+
+	$('a-assets').append(asset);
+	$('a-assets').append(asset_mtl);
+	$('a-scene').append(entity);
 
 	// save data for requested sensor in `sensorData`-variable
-	$.getJSON(data, function (result) {
+	$.getJSON(m_Data, function (result) {
 		// console.log(result);
 		$.each(result["session"], function (i, entry) {
 			// console.log(entry);
-			sensorData.push({
-				"sensorValue": entry[parameters["sensor"]],
-				"time": entry["time"],
-				"coordinate": {
-					"x": entry["xPos"],
-					"z": entry["yPos"],
-					"y": entry["zPos"]
-				}
-			});
+			if (entry[parameters["sensor"]] != 0)
+				sensorData.push({
+					"sensorValue": entry[parameters["sensor"]],
+					"time": entry["time"],
+					"coordinate": {
+						"x": entry["xPos"],
+						"z": (-1 * entry["yPos"]),
+						"y": entry["zPos"]
+					}
+				});
 		});
 
 		display(sensorData); //call method for displaying data in 3d-environment
@@ -96,23 +106,23 @@ $(document).ready(function () {
 });
 
 // display data in 3d space
-function display(data) {
+function display(m_Data) {
 
 	var dataArray = []; // the filtered data that will be displayed
 
 	// scale input data for better representation
 	var hscale = d3.scaleLinear()
-		.domain([0, 40])
-		.range([0, 1]);
+		.domain([0, 15])
+		.range([0, 2]);
 
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
-	dataArray.push(data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
+	dataArray.push(m_Data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
 
 	// push all data-elements that are far enough away from every other element
-	for (var i = 1; i < data.length; i++) {
-		if (data[i].sensorValue != 0) {
-			var currPos = data[i]["coordinate"];
+	for (var i = 1; i < m_Data.length; i++) {
+		if (m_Data[i].sensorValue != 0) {
+			var currPos = m_Data[i]["coordinate"];
 			var nearValueExists = false;
 
 			for (var j = 0; j < dataArray.length; j++) {
@@ -125,7 +135,7 @@ function display(data) {
 
 			// we don't have to check for time because new values are always on top
 			if (!nearValueExists)
-				dataArray.push(data[i]);
+				dataArray.push(m_Data[i]);
 		}
 	}
 
@@ -135,7 +145,7 @@ function display(data) {
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(d["sensorValue"]);
+			return hscale(Math.log(d["sensorValue"]));
 		});
 
 	// TODO: add texts for spheres
@@ -219,7 +229,7 @@ function display(data) {
 				if (down_button_pressed == true)
 					cameraPos["y"] -= MOVEMENT_SPEED * down_button;
 
-				// move camera down if left trigger pressed
+				// move camera up if left trigger pressed
 				if (up_button_pressed == true)
 					cameraPos["y"] += MOVEMENT_SPEED * up_button;
 
