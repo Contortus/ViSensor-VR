@@ -77,9 +77,11 @@ $(document).ready(function () {
 
 	// include obj-file in index.html
 	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
-	var entity = '<a-entity obj-model="obj: #room-obj"></a-entity>';
+	var asset_mtl = '<a-asset-item id="room-mtl" src="Obj/' + 'env.mtl"></a-asset-item>';
+	var entity = '<a-entity obj-model="obj: #room-obj; mtl: #room-mtl"></a-entity>';
 
 	$('a-assets').append(asset);
+	$('a-assets').append(asset_mtl);
 	$('a-scene').append(entity);
 
 	// save data for requested sensor in `sensorData`-variable
