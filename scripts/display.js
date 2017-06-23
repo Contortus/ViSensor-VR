@@ -1,25 +1,30 @@
 // Copyright (C) 2017 Jean Büsche
-// 
+//
 // This file is part of visensor-vr.
-// 
+//
 // visensor-vr is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // visensor-vr is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with visensor-vr.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 var menu_open = false;
 var color_scheme = 2;
+var button_state = {
+	"menu_button": false,
+	"left_button": false,
+	"right_button": false
+}
 
 document.addEventListener('keydown', (event) => {
 	const keyName = event.key;
@@ -193,12 +198,22 @@ function display(m_Data) {
 		var scene = d3.select("a-scene"); // select scene for displaying data
 		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 		spheres.attr("color", function (d, i) {
-			if (color_scheme == 0)
+			if (color_scheme == 0) {
 				var arr = blackWhite(hscale(Math.log(d["sensorValue"])), 1, 0);
-			else if (color_scheme == 1)
+				d3.select('#black_white').attr("color", "blue");
+				d3.select('#blue_white').attr("color", "red");
+				d3.select('#infrared').attr("color", "red");
+			} else if (color_scheme == 1) {
 				var arr = whiteBlue(hscale(Math.log(d["sensorValue"])), 1, 0);
-			else
+				d3.select('#black_white').attr("color", "red");
+				d3.select('#blue_white').attr("color", "blue");
+				d3.select('#infrared').attr("color", "red");
+			} else {
 				var arr = infraRed(hscale(Math.log(d["sensorValue"])), 1, 0);
+				d3.select('#black_white').attr("color", "red");
+				d3.select('#blue_white').attr("color", "red");
+				d3.select('#infrared').attr("color", "blue");
+			}
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		});
 
@@ -245,6 +260,32 @@ function display(m_Data) {
 			var up_button_pressed = buttons[7].pressed;
 			var down_button = buttons[6].value;
 			var up_button = buttons[7].value;
+			var menu_button = buttons[9].pressed;
+			var menu_left_button = buttons[14].pressed;
+			var menu_right_button = buttons[15].pressed;
+
+			// check for menu open request
+			if (!button_state["menu_button"] && menu_button) {
+				if (menu_open == false) {
+					menu_open = true;
+				} else {
+					menu_open = false;
+				}
+			}
+
+			if (!button_state["left_button"] && menu_left_button) {
+				if (color_scheme > 0)
+					color_scheme--;
+			}
+
+			if (!button_state["right_button"] && menu_right_button) {
+				if (color_scheme < 2)
+					color_scheme++;
+			}
+
+			button_state["menu_button"] = menu_button;
+			button_state["left_button"] = menu_left_button;
+			button_state["right_button"] = menu_right_button;
 
 			// update camera rotation
 			d3.select('a-camera').attr('rotation', function () {
