@@ -16,6 +16,12 @@
 // along with visensor-vr.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks will be ignored
+var ROTATION_SPEED = 2;
+var MOVEMENT_SPEED = 0.2;
+
+var MINIMAL_DISTANCE = 1; // minimal distance between measuring points
+
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 var menu_open = false;
@@ -38,21 +44,13 @@ document.addEventListener('keydown', (event) => {
 			menu_open = false;
 		}
 	} else if (keyName === 'ArrowRight' && menu_open) {
-		console.log("right");
 		if (color_scheme < 2)
 			color_scheme++;
 	} else if (keyName === 'ArrowLeft' && menu_open) {
-		console.log("left");
 		if (color_scheme > 0)
 			color_scheme--;
 	}
 }, false);
-
-var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks will be ignored
-var ROTATION_SPEED = 2;
-var MOVEMENT_SPEED = 0.2;
-
-var MINIMAL_DISTANCE = 1; // minimal distance between measuring points
 
 // this function is called whenever a controller is connected
 function connecthandler(e) {
@@ -139,11 +137,6 @@ function display(m_Data) {
 
 	var dataArray = []; // the filtered data that will be displayed
 
-	// scale input data for better representation
-	var hscale = d3.scaleLinear()
-		.domain([0, 15])
-		.range([0, 2]);
-
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
 	dataArray.push(m_Data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
@@ -168,18 +161,24 @@ function display(m_Data) {
 		}
 	}
 
+	var max = getMaxValue(dataArray);
+
+	// scale input data for better representation
+	var hscale = d3.scaleLog()
+		.domain([0.1, Math.round(max)])
+		.range([0, 1]);
+
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 	spheres.enter().append("a-sphere").attr("class", "datapoint")
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(Math.log(d["sensorValue"]));
+			return hscale(d["sensorValue"]);
 		}).attr("color", function (d, i) {
-			var arr = infraRed(hscale(Math.log(d["sensorValue"])), 1, 0)
-			console.log(arr);
+			var arr = infraRed(d["sensorValue"], max, 0.1);
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
-		});
+		}).attr("opacity", 0.8);
 
 	// TODO: add texts for spheres
 
@@ -199,21 +198,22 @@ function display(m_Data) {
 		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 		spheres.attr("color", function (d, i) {
 			if (color_scheme == 0) {
-				var arr = blackWhite(hscale(Math.log(d["sensorValue"])), 1, 0);
+				var arr = blackWhite(d["sensorValue"], max, 0.1);
 				d3.select('#black_white').attr("color", "blue");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "red");
 			} else if (color_scheme == 1) {
-				var arr = whiteBlue(hscale(Math.log(d["sensorValue"])), 1, 0);
+				var arr = whiteBlue(d["sensorValue"], max, 0.1);
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "blue");
 				d3.select('#infrared').attr("color", "red");
 			} else {
-				var arr = infraRed(hscale(Math.log(d["sensorValue"])), 1, 0);
+				var arr = infraRed(d["sensorValue"], max, 0.1);
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "blue");
 			}
+
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		});
 
@@ -414,4 +414,12 @@ function infraRed(value, max, min) {
 
 	var ret = [r, g, b];
 	return ret;
+}
+
+function getMaxValue (dataArray) {
+	var max = dataArray[0]["sensorValue"];
+	for (var i = 1; i < dataArray.length; i++) {
+		max = (dataArray[i]["sensorValue"] > max) ? dataArray[i]["sensorValue"] : max;
+	}
+	return max;
 }
