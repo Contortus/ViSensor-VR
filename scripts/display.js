@@ -162,11 +162,12 @@ function display(m_Data) {
 	}
 
 	var max = getMaxValue(dataArray);
+	var min = getMinValue(dataArray);
 
 	// scale input data for better representation
 	var hscale = d3.scaleLog()
-		.domain([0.1, Math.round(max)])
-		.range([0, 1]);
+		.domain([min, Math.round(max)])
+		.range([0.2, 1]);
 
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
@@ -176,7 +177,7 @@ function display(m_Data) {
 		}).attr("radius", function (d, i) {
 			return hscale(d["sensorValue"]);
 		}).attr("color", function (d, i) {
-			var arr = infraRed(d["sensorValue"], max, 0.1);
+			var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		}).attr("opacity", 0.8);
 
@@ -198,17 +199,17 @@ function display(m_Data) {
 		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 		spheres.attr("color", function (d, i) {
 			if (color_scheme == 0) {
-				var arr = blackWhite(d["sensorValue"], max, 0.1);
+				var arr = blackWhite(hscale(d["sensorValue"]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "blue");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "red");
 			} else if (color_scheme == 1) {
-				var arr = whiteBlue(d["sensorValue"], max, 0.1);
+				var arr = whiteBlue(hscale(d["sensorValue"]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "blue");
 				d3.select('#infrared').attr("color", "red");
 			} else {
-				var arr = infraRed(d["sensorValue"], max, 0.1);
+				var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "blue");
@@ -422,4 +423,12 @@ function getMaxValue (dataArray) {
 		max = (dataArray[i]["sensorValue"] > max) ? dataArray[i]["sensorValue"] : max;
 	}
 	return max;
+}
+
+function getMinValue (dataArray) {
+	var min = dataArray[0]["sensorValue"];
+	for (var i = 1; i < dataArray.length; i++) {
+		min = (dataArray[i]["sensorValue"] < min) ? dataArray[i]["sensorValue"] : min;
+	}
+	return min;
 }
