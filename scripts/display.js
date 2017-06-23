@@ -18,6 +18,30 @@
 
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
+var menu_open = false;
+var color_scheme = 2;
+
+document.addEventListener('keydown', (event) => {
+	const keyName = event.key;
+
+	// As the user release the Ctrl key, the key is no longer active.
+	// So event.ctrlKey is false.
+	if (keyName === 'Control') {
+		if (menu_open == false) {
+			menu_open = true;
+		} else {
+			menu_open = false;
+		}
+	} else if (keyName === 'ArrowRight' && menu_open) {
+		console.log("right");
+		if (color_scheme < 2)
+			color_scheme++;
+	} else if (keyName === 'ArrowLeft' && menu_open) {
+		console.log("left");
+		if (color_scheme > 0)
+			color_scheme--;
+	}
+}, false);
 
 var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks will be ignored
 var ROTATION_SPEED = 2;
@@ -146,6 +170,10 @@ function display(m_Data) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
 			return hscale(Math.log(d["sensorValue"]));
+		}).attr("color", function (d, i) {
+			var arr = infraRed(hscale(Math.log(d["sensorValue"])), 1, 0)
+			console.log(arr);
+			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		});
 
 	// TODO: add texts for spheres
@@ -161,6 +189,18 @@ function display(m_Data) {
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
+
+		var scene = d3.select("a-scene"); // select scene for displaying data
+		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
+		spheres.attr("color", function (d, i) {
+			if (color_scheme == 0)
+				var arr = blackWhite(hscale(Math.log(d["sensorValue"])), 1, 0);
+			else if (color_scheme == 1)
+				var arr = whiteBlue(hscale(Math.log(d["sensorValue"])), 1, 0);
+			else
+				var arr = infraRed(hscale(Math.log(d["sensorValue"])), 1, 0);
+			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
+		});
 
 		if (!haveEvents)
 			scangamepads(); // check for gamepads
@@ -181,6 +221,13 @@ function display(m_Data) {
 		// get camera rotation
 		if (d3.select('a-camera').attr("rotation") != null)
 			cameraRotation = d3.select('a-camera').attr("rotation");
+
+		// TODO: handle gamepad events for menu
+		if (menu_open)
+			d3.select('#menu').attr("visible", true);
+		else
+			d3.select('#menu').attr("visible", false);
+
 
 		// go through connected controllers
 		for (j in controllers) {
@@ -240,4 +287,90 @@ function display(m_Data) {
 		}
 	}
 	render();
+}
+
+function blackWhite(value, max, min) {
+	var bw;
+	if (value <= min) {
+		bw = 0;
+	} else if (value >= max) {
+		bw = 1;
+	} else {
+		bw = (value - min) / (max - min);
+	}
+	bw = Math.floor(bw * 255);
+	var ret = [bw, bw, bw];
+	return ret;
+}
+
+function whiteBlue(value, max, min) {
+	var nb;
+
+	if (value <= min) {
+		nb = 1;
+	} else if (value >= max) {
+		bw = 0;
+	} else {
+		nb = 1 - (value - min) / (max - min);
+	}
+	nb = Math.floor(nb * 255);
+	var ret = [nb, nb, 255];
+	return ret;
+}
+
+function infraRed(value, max, min) {
+	var x1, x2, x3, x4, x5, x6;
+	var offset = (max - min) / 7;
+	x1 = min + offset;
+	x2 = min + 2 * offset;
+	x3 = min + 3 * offset;
+	x4 = min + 4 * offset;
+	x5 = min + 5 * offset;
+	x6 = min + 6 * offset;
+
+	var r, g, b;
+
+	if (value <= min) {
+		r = 0;
+		g = 0;
+		b = 0;
+	} else if (value > min && value <= x1) {
+		r = (value - min) / offset;
+		g = 0;
+		b = r;
+	} else if (value > x1 && value <= x2) {
+		r = 1 - (value - x1) / offset;
+		g = 0;
+		b = 1;
+	} else if (value > x2 && value <= x3) {
+		r = 0;
+		g = (value - x2) / offset;
+		b = 1;
+	} else if (value > x3 && value <= x4) {
+		r = 0;
+		g = 1;
+		b = 1 - (value - x3) / offset;
+	} else if (value > x4 && value <= x5) {
+		r = (value - x4) / offset;
+		g = 1;
+		b = 0;
+	} else if (value > x5 && value <= x6) {
+		r = 1;
+		g = 1 - (value - x5) / offset;
+		b = 0;
+	} else if (value > x6 && value <= max) {
+		r = 1;
+		g = (value - x6) / offset;
+		b = g;
+	} else {
+		r = 1;
+		g = 1;
+		b = 1;
+	}
+	r = Math.floor(r * 255);
+	g = Math.floor(g * 255);
+	b = Math.floor(b * 255);
+
+	var ret = [r, g, b];
+	return ret;
 }
