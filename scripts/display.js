@@ -1,29 +1,59 @@
 // Copyright (C) 2017 Jean Büsche
-// 
+//
 // This file is part of visensor-vr.
-// 
+//
 // visensor-vr is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // visensor-vr is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with visensor-vr.  If not, see <http://www.gnu.org/licenses/>.
-// 
-
-var haveEvents = 'ongamepadconnected' in window;
-var controllers = {};
+//
 
 var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks will be ignored
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
-var MINIMAL_DISTANCE = 1; // minimal distance between measuring points
+var MINIMAL_DISTANCE = 2; // minimal distance between measuring points
+var MAXIMAL_SIZE = 1;
+var MINIMAL_SIZE = 0.1;
+
+var haveEvents = 'ongamepadconnected' in window;
+var controllers = {};
+var menu_open = false;
+var color_scheme = 2;
+// button states are used because the controller sends continous signals on button press
+var button_state = {
+	"menu_button": false,
+	"left_button": false,
+	"right_button": false
+}
+
+document.addEventListener('keydown', (event) => {
+	const keyName = event.key;
+
+	// As the user releases the Ctrl key, the key is no longer active.
+	// So event.ctrlKey is false.
+	if (keyName === 'Control') {
+		if (menu_open == false) {
+			menu_open = true;
+		} else {
+			menu_open = false;
+		}
+	} else if (keyName === 'ArrowRight' && menu_open) {
+		if (color_scheme < 2)
+			color_scheme++;
+	} else if (keyName === 'ArrowLeft' && menu_open) {
+		if (color_scheme > 0)
+			color_scheme--;
+	}
+}, false);
 
 // this function is called whenever a controller is connected
 function connecthandler(e) {
@@ -110,11 +140,6 @@ function display(m_Data) {
 
 	var dataArray = []; // the filtered data that will be displayed
 
-	// scale input data for better representation
-	var hscale = d3.scaleLinear()
-		.domain([0, 15])
-		.range([0, 2]);
-
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
 	dataArray.push(m_Data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
@@ -139,14 +164,25 @@ function display(m_Data) {
 		}
 	}
 
+	var max = getMaxValue(dataArray);
+	var min = getMinValue(dataArray);
+
+	// scale input data for better representation
+	var hscale = d3.scaleLog()
+		.domain([min, Math.round(max)])
+		.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
+
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 	spheres.enter().append("a-sphere").attr("class", "datapoint")
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(Math.log(d["sensorValue"]));
-		});
+			return hscale(d["sensorValue"]);
+		}).attr("color", function (d, i) {
+			var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
+			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
+		}).attr("opacity", 0.8);
 
 	// TODO: add texts for spheres
 
@@ -161,6 +197,29 @@ function display(m_Data) {
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
+
+		var scene = d3.select("a-scene"); // select scene for displaying data
+		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
+		spheres.attr("color", function (d, i) {
+			if (color_scheme == 0) {
+				var arr = blackWhite(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				d3.select('#black_white').attr("color", "blue");
+				d3.select('#blue_white').attr("color", "red");
+				d3.select('#infrared').attr("color", "red");
+			} else if (color_scheme == 1) {
+				var arr = whiteBlue(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				d3.select('#black_white').attr("color", "red");
+				d3.select('#blue_white').attr("color", "blue");
+				d3.select('#infrared').attr("color", "red");
+			} else {
+				var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				d3.select('#black_white').attr("color", "red");
+				d3.select('#blue_white').attr("color", "red");
+				d3.select('#infrared').attr("color", "blue");
+			}
+
+			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
+		});
 
 		if (!haveEvents)
 			scangamepads(); // check for gamepads
@@ -182,6 +241,13 @@ function display(m_Data) {
 		if (d3.select('a-camera').attr("rotation") != null)
 			cameraRotation = d3.select('a-camera').attr("rotation");
 
+		// TODO: handle gamepad events for menu
+		if (menu_open)
+			d3.select('#menu').attr("visible", true);
+		else
+			d3.select('#menu').attr("visible", false);
+
+
 		// go through connected controllers
 		for (j in controllers) {
 			var controller = controllers[j];
@@ -198,6 +264,32 @@ function display(m_Data) {
 			var up_button_pressed = buttons[7].pressed;
 			var down_button = buttons[6].value;
 			var up_button = buttons[7].value;
+			var menu_button = buttons[9].pressed;
+			var menu_left_button = buttons[14].pressed;
+			var menu_right_button = buttons[15].pressed;
+
+			// check for menu open request
+			if (!button_state["menu_button"] && menu_button) {
+				if (menu_open == false) {
+					menu_open = true;
+				} else {
+					menu_open = false;
+				}
+			}
+
+			if (!button_state["left_button"] && menu_left_button) {
+				if (color_scheme > 0)
+					color_scheme--;
+			}
+
+			if (!button_state["right_button"] && menu_right_button) {
+				if (color_scheme < 2)
+					color_scheme++;
+			}
+
+			button_state["menu_button"] = menu_button;
+			button_state["left_button"] = menu_left_button;
+			button_state["right_button"] = menu_right_button;
 
 			// update camera rotation
 			d3.select('a-camera').attr('rotation', function () {
@@ -240,4 +332,106 @@ function display(m_Data) {
 		}
 	}
 	render();
+}
+
+function blackWhite(value, max, min) {
+	var bw;
+	if (value <= min) {
+		bw = 0;
+	} else if (value >= max) {
+		bw = 1;
+	} else {
+		bw = (value - min) / (max - min);
+	}
+	bw = Math.floor(bw * 255);
+	var ret = [bw, bw, bw];
+	return ret;
+}
+
+function whiteBlue(value, max, min) {
+	var nb;
+
+	if (value <= min) {
+		nb = 1;
+	} else if (value >= max) {
+		bw = 0;
+	} else {
+		nb = 1 - (value - min) / (max - min);
+	}
+	nb = Math.floor(nb * 255);
+	var ret = [nb, nb, 255];
+	return ret;
+}
+
+function infraRed(value, max, min) {
+	var x1, x2, x3, x4, x5, x6;
+	var offset = (max - min) / 7;
+	x1 = min + offset;
+	x2 = min + 2 * offset;
+	x3 = min + 3 * offset;
+	x4 = min + 4 * offset;
+	x5 = min + 5 * offset;
+	x6 = min + 6 * offset;
+
+	var r, g, b;
+
+	if (value <= min) {
+		r = 0;
+		g = 0;
+		b = 0;
+	} else if (value > min && value <= x1) {
+		r = (value - min) / offset;
+		g = 0;
+		b = r;
+	} else if (value > x1 && value <= x2) {
+		r = 1 - (value - x1) / offset;
+		g = 0;
+		b = 1;
+	} else if (value > x2 && value <= x3) {
+		r = 0;
+		g = (value - x2) / offset;
+		b = 1;
+	} else if (value > x3 && value <= x4) {
+		r = 0;
+		g = 1;
+		b = 1 - (value - x3) / offset;
+	} else if (value > x4 && value <= x5) {
+		r = (value - x4) / offset;
+		g = 1;
+		b = 0;
+	} else if (value > x5 && value <= x6) {
+		r = 1;
+		g = 1 - (value - x5) / offset;
+		b = 0;
+	} else if (value > x6 && value <= max) {
+		r = 1;
+		g = (value - x6) / offset;
+		b = g;
+	} else {
+		r = 1;
+		g = 1;
+		b = 1;
+	}
+	r = Math.floor(r * 255);
+	g = Math.floor(g * 255);
+	b = Math.floor(b * 255);
+
+	var ret = [r, g, b];
+	return ret;
+}
+
+function getMaxValue (dataArray) {
+	var max = dataArray[0]["sensorValue"];
+	for (var i = 1; i < dataArray.length; i++) {
+		max = (dataArray[i]["sensorValue"] > max) ? dataArray[i]["sensorValue"] : max;
+	}
+	return max;
+}
+
+function getMinValue (dataArray) {
+	var min = dataArray[0]["sensorValue"];
+	for (var i = 1; i < dataArray.length; i++) {
+		min = (dataArray[i]["sensorValue"] < min) ? dataArray[i]["sensorValue"] : min;
+	}
+	return min;
 }

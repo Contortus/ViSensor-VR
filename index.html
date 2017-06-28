@@ -1,21 +1,21 @@
 <!--
  Copyright (C) 2017 Jean Büsche
- 
+
  This file is part of visensor-vr.
- 
+
  visensor-vr is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  visensor-vr is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with visensor-vr.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 -->
 
 <html>
@@ -24,6 +24,12 @@
 	<script src="https://aframe.io/releases/0.5.0/aframe.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+
+	<!-- Include component script into your project along with A-Frame. -->
+	<script src="scripts/aframe-ui-widgets.min.js"></script>
+
+	<script src="https://rawgit.com/ngokevin/aframe-animation-component/master/dist/aframe-animation-component.min.js"></script>
+	<script src="https://rawgit.com/gmarty/aframe-ui-components/master/dist/aframe-ui-components.min.js"></script>
 </head>
 
 <body>
@@ -36,16 +42,48 @@
 		<!-- change lighting-->
 		<!--<a-light type="ambient" color="#445451"></a-light>
 		<a-light type="point" intesity="2" position="2 4 4"></a-light>-->
-		
+
 		<a-sky color="lightblue"></a-sky>
+
+		<!-- Adds UI button widget -->
+		<!--<a-entity data-interactive="true"id="mybutton" ui-button rotation="45 0 -45" position="0 1 0"></a-entity>-->
+
 
 		<a-camera id="camera">
 			<!-- TODO: create better cursor -->
-			<a-cursor fuse="true" timeout="10" color="#4CC3D9"></a-cursor>
+			<a-cursor cursor-feedback fuse="false" timeout="10" color="#4CC3D9"></a-cursor>
+
+			<a-entity id="menu" ui-modal visible="false">
+				<a-plane width="4" height="1.5" color="red" position="0 0 -3">
+					<a-text value="color scheme:" position="-1.95 0.55 0" width="3.5"></a-text>
+
+					<a-plane id="black_white" width="0.6" height="0.3" color="red" position="-0.15 0.55 0.01">
+						<a-text value="grayscale" position="-0.25 0 0" scale="0.5 0.5 0.5"></a-text>
+					</a-plane>
+
+					<a-plane id="blue_white" width="0.6" height="0.3" color="red" position="0.6 0.55 0.01">
+						<a-text value="blue/white" position="-0.26 0 0" scale="0.5 0.5 0.5"></a-text>
+					</a-plane>
+
+					<a-plane id="infrared" width="0.5" height="0.3" color="blue" position="1.5 0.55 0.01">
+						<a-text value="infrared" position="-0.2 0 0" scale="0.5 0.5 0.5"></a-text>
+					</a-plane>
+
+					<!--<a-plane width="0.6" height="0.3" color="blue" position="-.3 0.8 0.01">
+						<a-text value="hello" position="-0.3 0 0"></a-text>
+					</a-plane>-->
+				</a-plane>
+			</a-entity>
 		</a-camera>
 	</a-scene>
 
 	<script src="scripts/display.js"></script>
+	<!--<script>
+		var mybutton = document.querySelector('#mybutton');
+		mybutton.addEventListener('pressed', function () {
+			console.log("button pressed");
+		});
+	</script>-->
 </body>
 
 </html>
