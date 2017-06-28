@@ -20,12 +20,15 @@ var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks wil
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
-var MINIMAL_DISTANCE = 1; // minimal distance between measuring points
+var MINIMAL_DISTANCE = 2; // minimal distance between measuring points
+var MAXIMAL_SIZE = 1;
+var MINIMAL_SIZE = 0.1;
 
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 var menu_open = false;
 var color_scheme = 2;
+// button states are used because the controller sends continous signals on button press
 var button_state = {
 	"menu_button": false,
 	"left_button": false,
@@ -35,7 +38,7 @@ var button_state = {
 document.addEventListener('keydown', (event) => {
 	const keyName = event.key;
 
-	// As the user release the Ctrl key, the key is no longer active.
+	// As the user releases the Ctrl key, the key is no longer active.
 	// So event.ctrlKey is false.
 	if (keyName === 'Control') {
 		if (menu_open == false) {
@@ -167,7 +170,7 @@ function display(m_Data) {
 	// scale input data for better representation
 	var hscale = d3.scaleLog()
 		.domain([min, Math.round(max)])
-		.range([0.2, 1]);
+		.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
 
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
