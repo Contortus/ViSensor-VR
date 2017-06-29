@@ -20,19 +20,31 @@ var CONTROLLER_THRESHOLD = 0.3; //up to this value movement of the joysticks wil
 var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
+var DISPLAYABLE_SENSORS = ["illuminance", "temperature", "humidity"];
+var DISPLAYED_SENSOR = "illuminance";
+
 var MINIMAL_DISTANCE = 2; // minimal distance between measuring points
-var MAXIMAL_SIZE = 1;
+var MAXIMAL_SIZE = 1.5;
 var MINIMAL_SIZE = 0.1;
+
+var SENSOR_CHANGED = false;
+
+var sensorData = [];
+var parameters = {}; // variables declared via http-get
 
 var haveEvents = 'ongamepadconnected' in window;
 var controllers = {};
 var menu_open = false;
+var menu_state = "scheme";
 var color_scheme = 2;
+var sensor = 2;
 // button states are used because the controller sends continous signals on button press
 var button_state = {
 	"menu_button": false,
 	"left_button": false,
-	"right_button": false
+	"right_button": false,
+	"up_button": false,
+	"down_button": false
 }
 
 document.addEventListener('keydown', (event) => {
@@ -47,12 +59,31 @@ document.addEventListener('keydown', (event) => {
 			menu_open = false;
 		}
 	} else if (keyName === 'ArrowRight' && menu_open) {
-		if (color_scheme < 2)
-			color_scheme++;
+		if (menu_state == "scheme") {
+			if (color_scheme < 2)
+				color_scheme++;
+		} else {
+			if (sensor < 2) {
+				sensor++;
+				SENSOR_CHANGED = true;
+			}
+		}
 	} else if (keyName === 'ArrowLeft' && menu_open) {
-		if (color_scheme > 0)
-			color_scheme--;
+		if (menu_state == "scheme") {
+			if (color_scheme > 0)
+				color_scheme--;
+		} else {
+			if (sensor > 0) {
+				sensor--;
+				SENSOR_CHANGED = true;
+			}
+		}
+	} else if (keyName == 'ArrowDown' && menu_open) {
+		menu_state = "sensor";
+	} else if (keyName == 'ArrowUp' && menu_open) {
+		menu_state = "scheme";
 	}
+
 }, false);
 
 // this function is called whenever a controller is connected
@@ -90,7 +121,6 @@ if (!haveEvents) {
 }
 
 $(document).ready(function () {
-	var parameters = {}; // variables declared via http-get
 	var i;
 	var getItems = window.location.search.substr(1).split(/\?|\&/);
 
@@ -98,12 +128,15 @@ $(document).ready(function () {
 		parameters[getItems[i].split("=")[0]] = getItems[i].split("=")[1];
 	}
 
-	// either `sensor`or `file`variable are empty
-	if (parameters["sensor"] == "" && parameters["file"] == "")
-		return false;
+	var not_a_sensor = true;
 
-	var sensorData = [];
-	var m_Data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
+	// test whether the sensor can be displayed
+	for (var i = 0; i < DISPLAYABLE_SENSORS.length; i++)
+		if (parameters["sensor"] == DISPLAYABLE_SENSORS[i])
+			not_a_sensor = false;
+
+	if (not_a_sensor)
+		return false;
 
 	// include obj-file in index.html
 	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
@@ -114,6 +147,14 @@ $(document).ready(function () {
 	$('a-assets').append(asset_mtl);
 	$('a-scene').append(entity);
 
+	setSensorData(function () {
+		display(sensorData); //call method for displaying data in 3d-environment
+	});
+});
+
+function setSensorData(callback) {
+	var m_Data = "Json/" + parameters["file"] + ".json"; // JSON-data-file
+
 	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(m_Data, function (result) {
 		// console.log(result);
@@ -121,7 +162,9 @@ $(document).ready(function () {
 			// console.log(entry);
 			if (entry[parameters["sensor"]] != 0)
 				sensorData.push({
-					"sensorValue": entry[parameters["sensor"]],
+					"illuminance": entry["illuminance"],
+					"humidity": entry["humidity"],
+					"temperature": entry["temperature"],
 					"time": entry["time"],
 					"coordinate": {
 						"x": entry["xPos"],
@@ -131,23 +174,24 @@ $(document).ready(function () {
 				});
 		});
 
-		display(sensorData); //call method for displaying data in 3d-environment
+		callback();
 	});
-});
+}
 
 // display data in 3d space
-function display(m_Data) {
+function display() {
 
 	var dataArray = []; // the filtered data that will be displayed
 
 	var scene = d3.select("a-scene"); // select scene for displaying data
 
-	dataArray.push(m_Data[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
+	dataArray.push(sensorData[0]); // first element is the only element that must be displayed because later values might be to closed to be represented
+	console.log(dataArray);
 
 	// push all data-elements that are far enough away from every other element
-	for (var i = 1; i < m_Data.length; i++) {
-		if (m_Data[i].sensorValue != 0) {
-			var currPos = m_Data[i]["coordinate"];
+	for (var i = 1; i < sensorData.length; i++) {
+		if (sensorData[i][DISPLAYED_SENSOR] != 0) {
+			var currPos = sensorData[i]["coordinate"];
 			var nearValueExists = false;
 
 			for (var j = 0; j < dataArray.length; j++) {
@@ -160,27 +204,29 @@ function display(m_Data) {
 
 			// we don't have to check for time because new values are always on top
 			if (!nearValueExists)
-				dataArray.push(m_Data[i]);
+				dataArray.push(sensorData[i]);
 		}
 	}
 
 	var max = getMaxValue(dataArray);
 	var min = getMinValue(dataArray);
+	console.log("max: " + max + ", min: " + min);
 
 	// scale input data for better representation
 	var hscale = d3.scaleLog()
 		.domain([min, Math.round(max)])
 		.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
 
+	console.log(dataArray);
 	// create spheres
 	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 	spheres.enter().append("a-sphere").attr("class", "datapoint")
 		.attr("position", function (d, i) {
 			return d["coordinate"];
 		}).attr("radius", function (d, i) {
-			return hscale(d["sensorValue"]);
+			return (hscale(d[DISPLAYED_SENSOR]));
 		}).attr("color", function (d, i) {
-			var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
+			var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		}).attr("opacity", 0.8);
 
@@ -198,21 +244,54 @@ function display(m_Data) {
 	function render() {
 		requestAnimationFrame(render);
 
+		if (sensor == 0) {
+			DISPLAYED_SENSOR = "temperature";
+			d3.select('#temperature').attr("color", "blue");
+			d3.select('#illuminance').attr("color", "red");
+			d3.select('#humidity').attr("color", "red");
+		} else if (sensor == 1) {
+			DISPLAYED_SENSOR = "illuminance";
+			d3.select('#temperature').attr("color", "red");
+			d3.select('#illuminance').attr("color", "blue");
+			d3.select('#humidity').attr("color", "red");
+		} else {
+			DISPLAYED_SENSOR = "humidity";
+			d3.select('#temperature').attr("color", "red");
+			d3.select('#illuminance').attr("color", "red");
+			d3.select('#humidity').attr("color", "blue");
+		}
+
+		console.log(menu_state);
+		if (menu_state == "sensor") {
+			d3.select('#sensor').attr("color", "black");
+			d3.select('#scheme').attr("color", "grey");
+		} else {
+			d3.select('#scheme').attr("color", "black");
+			d3.select('#sensor').attr("color", "grey");
+		}
+
+		var max = getMaxValue(dataArray);
+		var min = getMinValue(dataArray);
+
+		var hscale = d3.scaleLog()
+			.domain([min, Math.round(max)])
+			.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
+
 		var scene = d3.select("a-scene"); // select scene for displaying data
 		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
 		spheres.attr("color", function (d, i) {
 			if (color_scheme == 0) {
-				var arr = blackWhite(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				var arr = blackWhite(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "blue");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "red");
 			} else if (color_scheme == 1) {
-				var arr = whiteBlue(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				var arr = whiteBlue(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "blue");
 				d3.select('#infrared').attr("color", "red");
 			} else {
-				var arr = infraRed(hscale(d["sensorValue"]), hscale(max), hscale(min));
+				var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "blue");
@@ -220,6 +299,18 @@ function display(m_Data) {
 
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 		});
+
+		if (SENSOR_CHANGED) {
+			spheres.attr("class", "datapoint")
+				.attr("radius", function (d, i) {
+					return (hscale(d[DISPLAYED_SENSOR]));
+				}).attr("color", function (d, i) {
+					var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
+					return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
+				}).attr("opacity", 0.8);
+
+			SENSOR_CHANGED = false;
+		}
 
 		if (!haveEvents)
 			scangamepads(); // check for gamepads
@@ -267,6 +358,8 @@ function display(m_Data) {
 			var menu_button = buttons[9].pressed;
 			var menu_left_button = buttons[14].pressed;
 			var menu_right_button = buttons[15].pressed;
+			var menu_up_button = buttons[16].pressed;
+			var menu_down_button = buttons[17].pressed;
 
 			// check for menu open request
 			if (!button_state["menu_button"] && menu_button) {
@@ -278,13 +371,35 @@ function display(m_Data) {
 			}
 
 			if (!button_state["left_button"] && menu_left_button) {
-				if (color_scheme > 0)
-					color_scheme--;
+				if (menu_state == "scheme") {
+					if (color_scheme > 0)
+						color_scheme--;
+				} else {
+					if (sensor > 0) {
+						sensor--;
+						SENSOR_CHANGED = true;
+					}
+				}
 			}
 
 			if (!button_state["right_button"] && menu_right_button) {
-				if (color_scheme < 2)
-					color_scheme++;
+				if (menu_state == "scheme") {
+					if (color_scheme < 2)
+						color_scheme++;
+				} else {
+					if (sensor < 2) {
+						sensor++;
+						SENSOR_CHANGED = true;
+					}
+				}
+			}
+
+			if (!button_state["up_button"] && menu_up_button) {
+				menu_state = "scheme";
+			}
+
+			if (!button_state["down_button"] && menu_down_button) {
+				menu_state = "sensor";
 			}
 
 			button_state["menu_button"] = menu_button;
@@ -420,18 +535,18 @@ function infraRed(value, max, min) {
 	return ret;
 }
 
-function getMaxValue (dataArray) {
-	var max = dataArray[0]["sensorValue"];
+function getMaxValue(dataArray) {
+	var max = dataArray[0][DISPLAYED_SENSOR];
 	for (var i = 1; i < dataArray.length; i++) {
-		max = (dataArray[i]["sensorValue"] > max) ? dataArray[i]["sensorValue"] : max;
+		max = (dataArray[i][DISPLAYED_SENSOR] > max) ? dataArray[i][DISPLAYED_SENSOR] : max;
 	}
 	return max;
 }
 
-function getMinValue (dataArray) {
-	var min = dataArray[0]["sensorValue"];
+function getMinValue(dataArray) {
+	var min = dataArray[0][DISPLAYED_SENSOR];
 	for (var i = 1; i < dataArray.length; i++) {
-		min = (dataArray[i]["sensorValue"] < min) ? dataArray[i]["sensorValue"] : min;
+		min = (dataArray[i][DISPLAYED_SENSOR] < min) ? dataArray[i][DISPLAYED_SENSOR] : min;
 	}
 	return min;
 }
