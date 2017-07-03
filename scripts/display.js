@@ -21,23 +21,24 @@ var ROTATION_SPEED = 2;
 var MOVEMENT_SPEED = 0.2;
 
 var DISPLAYABLE_SENSORS = ["illuminance", "temperature", "humidity"];
-var DISPLAYED_SENSOR = "illuminance";
+var DISPLAYED_SENSOR;
 
-var MINIMAL_DISTANCE = 2; // minimal distance between measuring points
-var MAXIMAL_SIZE = 1.5;
-var MINIMAL_SIZE = 0.1;
+var MINIMAL_DISTANCE = 1.5; // minimal distance between measuring points
+var MAXIMAL_SIZE = 1.0; // minimal size for spheres
+var MINIMAL_SIZE = 0.1; // maximal size for spheres
 
-var SENSOR_CHANGED = false;
+var SENSOR_CHANGED = true; // true if the sensor is changed in the menu
 
-var sensorData = [];
-var parameters = {}; // variables declared via http-get
+var sensorData = []; // parsed data from json-file
+var parameters = {}; // variables declared via http-get //TODO: check if needed
 
 var haveEvents = 'ongamepadconnected' in window;
-var controllers = {};
-var menu_open = false;
+var controllers = {}; // list of controllers
+var menu_open = false; // true if menu has been opened
 var menu_state = "scheme";
 var color_scheme = 2;
 var sensor = 2;
+
 // button states are used because the controller sends continous signals on button press
 var button_state = {
 	"menu_button": false,
@@ -50,10 +51,8 @@ var button_state = {
 document.addEventListener('keydown', (event) => {
 	const keyName = event.key;
 
-	// As the user releases the Ctrl key, the key is no longer active.
-	// So event.ctrlKey is false.
-	if (keyName === 'Control') {
-		if (menu_open == false) {
+	if (keyName === 'Control') { // user wants to open/close menu
+		if (menu_open == false) { // if menu is open then close and reverse
 			menu_open = true;
 		} else {
 			menu_open = false;
@@ -120,6 +119,7 @@ if (!haveEvents) {
 	setInterval(scangamepads, 500);
 }
 
+// executed on first load of page
 $(document).ready(function () {
 	var i;
 	var getItems = window.location.search.substr(1).split(/\?|\&/);
@@ -137,6 +137,8 @@ $(document).ready(function () {
 
 	if (not_a_sensor)
 		return false;
+
+	DISPLAYED_SENSOR = parameters["sensor"];
 
 	// include obj-file in index.html
 	var asset = '<a-asset-item id="room-obj" src="Obj/' + parameters["file"] + '.obj"></a-asset-item>';
