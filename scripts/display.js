@@ -360,8 +360,8 @@ function display() {
 			var menu_button = buttons[9].pressed;
 			var menu_left_button = buttons[14].pressed;
 			var menu_right_button = buttons[15].pressed;
-			var menu_up_button = buttons[16].pressed;
-			var menu_down_button = buttons[17].pressed;
+			var menu_up_button = buttons[12].pressed;
+			var menu_down_button = buttons[13].pressed;
 
 			// check for menu open request
 			if (!button_state["menu_button"] && menu_button) {
