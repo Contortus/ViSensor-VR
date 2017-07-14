@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Jean Büsche
+// Copyright (C) 2017 Artur Baltabayev, Jean Büsche, Martin Kern, Gabriel Scheibler
 //
 // This file is part of visensor-vr.
 //
