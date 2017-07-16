@@ -171,7 +171,6 @@ function setSensorData(callback) {
 
 	// save data for requested sensor in `sensorData`-variable
 	$.getJSON(m_Data, function (result) {
-		// console.log(result);
 		$.each(result["session"], function (i, entry) {
 			if (entry[DISPLAYED_SENSOR] != 0)
 				sensorData.push({
@@ -209,7 +208,7 @@ function display() {
 			for (var j = 0; j < dataArray.length; j++) {
 				var includedPos = dataArray[j]["coordinate"];
 				var distance = Math.sqrt(Math.pow(currPos.x - includedPos.x, 2) + Math.pow(currPos.z - includedPos.z, 2) + Math.pow(currPos.y - includedPos.y, 2));
-				// console.log(distance);
+
 				if (distance < MINIMAL_DISTANCE)
 					nearValueExists = true
 			}
@@ -222,40 +221,64 @@ function display() {
 
 	var max = getMaxValue(dataArray);
 	var min = getMinValue(dataArray);
-	console.log(dataArray);
-	console.log("max: " + max + ", min: " + min);
 
 	// scale input data for better representation
 	var hscale = d3.scaleLog()
 		.domain([min, Math.round(max)])
 		.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
 
-	console.log(dataArray);
 	// create spheres
-	var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
-	spheres.enter().append("a-sphere").attr("class", "datapoint")
+	var entities = scene.selectAll('a-entity.datapoint').data(dataArray);
+
+	var entity = entities.enter()
+		.append('a-entity')
+		.attr("class", "datapoint")
+		.attr("id", function (d, i) {
+			return "datapoint_" + i;
+		})
 		.attr("position", function (d, i) {
 			return d["coordinate"];
-		}).attr("radius", function (d, i) {
+		});
+
+	entity.append("a-sphere").attr("class", "datapoint")
+		.attr("radius", function (d, i) {
 			return (hscale(d[DISPLAYED_SENSOR]));
-		}).attr("color", function (d, i) {
+		})
+		.attr("color", function (d, i) {
 			var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
-		}).attr("opacity", 0.8);
+		})
+		.attr("opacity", 0.8);
 
-	// TODO: add texts for spheres
-
-	// var texts = scene.selectAll("a-text.datapoint").data(dataArray);
-	// texts.enter().append("a-text").attr("class", "datapoint")
-	// 	.attr("position", function (d, i) {
-	// 		var coordinates = d["coordinates"].substr(1).split(" ");
-
-	// 		 console.log(coordinates);
-	// 	});
+	// text with value for datapoint
+	entity.append("a-text").attr("class", "datapoint")
+		.attr("position", function (d, i) {
+			return {"x": 0, y: d["coordinate"].y + (hscale(d[DISPLAYED_SENSOR])) + 0.5, z: 0};
+		})
+		.attr("value", function (d, i) {
+			return Math.round(d[DISPLAYED_SENSOR]* 100) / 100;
+		})
+		.attr("align", "center")
+		.attr("visible", false);
 
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
+
+		var scene = d3.select("a-scene"); // select scene for displaying data
+		var entities = scene.selectAll('a-entity.datapoint').data(dataArray);
+
+		entities.on('mouseenter', function () {
+			d3.select(this)
+				.select('a-text')
+				.attr('visible', true)
+		})
+
+			entities.on('mouseleave', function () {
+			d3.select(this)
+				.select('a-text')
+				.attr('visible', false)
+		})
 
 		switch (DISPLAYED_SENSOR) {
 			case 'temperature':
@@ -305,9 +328,8 @@ function display() {
 			.domain([min, Math.round(max)])
 			.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
 
-		var scene = d3.select("a-scene"); // select scene for displaying data
-		var spheres = scene.selectAll("a-sphere.datapoint").data(dataArray);
-		spheres.attr("color", function (d, i) {
+		entities.select('a-sphere')
+		.attr("color", function (d, i) {
 			if (color_scheme == 0) {
 				var arr = blackWhite(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "blue");
@@ -329,13 +351,21 @@ function display() {
 		});
 
 		if (SENSOR_CHANGED) {
-			spheres.attr("class", "datapoint")
+			entities.select('a-sphere')
 				.attr("radius", function (d, i) {
 					return (hscale(d[DISPLAYED_SENSOR]));
 				}).attr("color", function (d, i) {
 					var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 					return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
 				}).attr("opacity", 0.8);
+
+			entities.select('a-text')
+				.attr("position", function (d, i) {
+					return {x: 0, y: d["coordinate"].y + (hscale(d[DISPLAYED_SENSOR])) + 0.5, z: 0};
+				})
+				.attr("value", function (d, i) {
+					return Math.round(d[DISPLAYED_SENSOR]* 100) / 100;
+				});
 
 			SENSOR_CHANGED = false;
 		}
@@ -359,6 +389,23 @@ function display() {
 		// get camera rotation
 		if (d3.select('a-camera').attr("rotation") != null)
 			cameraRotation = d3.select('a-camera').attr("rotation");
+
+		// rotate text towards camera
+		entities.select('a-text')
+				.attr("rotation", function (d, i) {
+					var thisPos = d3.select(this.parentNode).attr('position') != null ? d3.select(this.parentNode).attr('position') : {"x": 0, "y": 0, "z": 0};
+
+					var d = Math.sqrt(Math.pow(thisPos["x"] - cameraPos["x"], 2) + Math.pow(thisPos["z"] - cameraPos["z"], 2) + Math.pow(thisPos["y"] - cameraPos["y"], 2));
+					var dx = thisPos["x"] - cameraPos["x"];
+					var dy = thisPos["y"] -  cameraPos["y"];
+					var dz = thisPos["z"] - cameraPos["z"];
+
+					var h_angle = ((Math.atan2(dx, dz) * (180 / Math.PI)) + 180) % 360 ;
+
+					var v_angle = ((Math.asin(dy / d) * (180 / Math.PI)) + 360) % 360 ;
+
+					return {x: v_angle, y: h_angle, z: 0};
+				});
 
 		// TODO: handle gamepad events for menu
 		if (menu_open)
