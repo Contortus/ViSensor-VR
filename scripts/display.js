@@ -173,8 +173,7 @@ function setSensorData(callback) {
 	$.getJSON(m_Data, function (result) {
 		// console.log(result);
 		$.each(result["session"], function (i, entry) {
-			// console.log(entry);
-			if (entry[parameters["sensor"]] != 0)
+			if (entry[DISPLAYED_SENSOR] != 0)
 				sensorData.push({
 					"illuminance": entry["illuminance"],
 					"humidity": entry["humidity"],
@@ -223,6 +222,7 @@ function display() {
 
 	var max = getMaxValue(dataArray);
 	var min = getMinValue(dataArray);
+	console.log(dataArray);
 	console.log("max: " + max + ", min: " + min);
 
 	// scale input data for better representation
