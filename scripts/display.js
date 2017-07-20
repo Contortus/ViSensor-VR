@@ -459,7 +459,7 @@ function display() {
 					return {x: v_angle, y: h_angle, z: 0};
 				});
 
-		// TODO: handle gamepad events for menu
+		// handle gamepad events for menu
 		if (menu_open)
 			d3.select('#menu').attr("visible", true);
 		else
