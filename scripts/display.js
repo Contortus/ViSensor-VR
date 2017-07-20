@@ -629,7 +629,7 @@ function whiteBlue(value, max, min) {
 	if (value <= min) {
 		nb = 1;
 	} else if (value >= max) {
-		bw = 0;
+		nb = 0;
 	} else {
 		nb = 1 - (value - min) / (max - min);
 	}
