@@ -39,6 +39,8 @@ var menu_state = "scheme";
 var color_scheme = 2;
 var sensor = 1;
 
+var hoveredDatapointPosition; //position of datapoint the cursor is currently looking at
+
 // button states are used because the controller sends continous signals on button press
 var button_state = {
 	"menu_button": false,
@@ -223,9 +225,13 @@ function display() {
 	var min = getMinValue(dataArray);
 
 	// scale input data for better representation
-	var hscale = d3.scaleLog()
-		.domain([min, Math.round(max)])
-		.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
+	var hscale = (DISPLAYED_SENSOR == "illuminance") ? 
+		d3.scaleLog()
+			.domain([min, Math.round(max)])
+			.range([MINIMAL_SIZE, MAXIMAL_SIZE]) :
+		d3.scaleLinear()
+			.domain([min, Math.round(max)])
+			.range([MINIMAL_SIZE, MAXIMAL_SIZE]);
 
 	// create spheres
 	var entities = scene.selectAll('a-entity.datapoint').data(dataArray);
@@ -253,7 +259,7 @@ function display() {
 	// text with value for datapoint
 	entity.append("a-text").attr("class", "datapoint")
 		.attr("position", function (d, i) {
-			return {"x": 0, y: d["coordinate"].y + (hscale(d[DISPLAYED_SENSOR])) + 0.5, z: 0};
+			return {"x": 0, "y": (hscale(d[DISPLAYED_SENSOR])) + 0.5, "z": 0};
 		})
 		.attr("value", function (d, i) {
 			return Math.round(d[DISPLAYED_SENSOR]* 100) / 100;
@@ -271,13 +277,17 @@ function display() {
 		entities.on('mouseenter', function () {
 			d3.select(this)
 				.select('a-text')
-				.attr('visible', true)
+				.attr('visible', true);
+
+				hoveredDatapointPosition = d3.select(this).attr('position');
 		})
 
 			entities.on('mouseleave', function () {
 			d3.select(this)
 				.select('a-text')
-				.attr('visible', false)
+				.attr('visible', false);
+
+			hoveredDatapointPosition = null;
 		})
 
 		switch (DISPLAYED_SENSOR) {
@@ -361,14 +371,43 @@ function display() {
 
 			entities.select('a-text')
 				.attr("position", function (d, i) {
-					return {x: 0, y: d["coordinate"].y + (hscale(d[DISPLAYED_SENSOR])) + 0.5, z: 0};
+					return {x: 0, y: (hscale(d[DISPLAYED_SENSOR])) + 0.5, z: 0};
 				})
 				.attr("value", function (d, i) {
-					return Math.round(d[DISPLAYED_SENSOR]* 100) / 100;
+					var e = null;
+
+					switch (DISPLAYED_SENSOR) {
+						case "temperature":
+							e = "°C"; // TODO: degree symbol not showing up
+							break;
+						case "humidity":
+							e = "%";
+							break;
+						case "illuminance":
+							e = "lx";
+							break;
+						default:
+							break;
+					}
+
+					return Math.round(d[DISPLAYED_SENSOR]* 100) / 100 + " " + e;
 				});
 
 			SENSOR_CHANGED = false;
 		}
+
+		entities.select('a-text')
+				.attr("visible", function (d, i) {
+					if (hoveredDatapointPosition == null)
+						return false;
+
+					var distance = calcDistance(hoveredDatapointPosition, d3.select(this.parentNode).attr('position'));
+
+					if (distance <= 10)
+						return true;
+					
+					return false;
+				});
 
 		if (!haveEvents)
 			scangamepads(); // check for gamepads
@@ -638,4 +677,9 @@ function getMinValue(dataArray) {
 		min = (dataArray[i][DISPLAYED_SENSOR] < min) ? dataArray[i][DISPLAYED_SENSOR] : min;
 	}
 	return min;
+}
+
+// calculate distance between two points 
+function calcDistance(pos1, pos2) {
+	return Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2) + Math.pow(pos2.z - pos1.z, 2));
 }
