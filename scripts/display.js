@@ -267,6 +267,16 @@ function display() {
 		.attr("align", "center")
 		.attr("visible", false);
 
+	entity.select('a-text').append("a-plane").attr("class", "datapoint")
+		.attr("position", function (d, i) {
+			return {"x": 0.45, "y": 0, "z": 0};
+		})
+		.attr("scale", "0.16 0.16 0.16")
+		.attr("color", "white")
+		.attr("transparent", true)
+		.attr("visible", false)
+		.attr("src", "centigrades_texture.png");
+
 	// update-loop
 	function render() {
 		requestAnimationFrame(render);
@@ -378,13 +388,16 @@ function display() {
 
 					switch (DISPLAYED_SENSOR) {
 						case "temperature":
-							e = "°C"; // TODO: degree symbol not showing up
+							e = "";
+							entity.select('a-plane').attr("visible", true);
 							break;
 						case "humidity":
 							e = "%";
+							entity.select('a-plane').attr("visible", false);
 							break;
 						case "illuminance":
 							e = "lx";
+							entity.select('a-plane').attr("visible", false);
 							break;
 						default:
 							break;
