@@ -38,7 +38,7 @@ var haveEvents = 'ongamepadconnected' in window;
 var controllers = {}; // list of controllers
 var menu_open = false; // true if menu has been opened
 var menu_state = "scheme"; // can change between scheme and color
-var color_scheme = 2; // the color sheme that is used 
+var color_scheme = 2; // the color sheme that is used
 var sensor = 1; // sensor that is displayed (see `DISPLAYED_SENSOR`)
 
 var hoveredDatapointPosition; //position of datapoint the cursor is currently looking at
@@ -230,7 +230,7 @@ function display() {
 	var min = getMinValue(dataArray); // minimal value for displayed sensor
 
 	// scale input data for better representation
-	var hscale = (DISPLAYED_SENSOR == "illuminance") ? 
+	var hscale = (DISPLAYED_SENSOR == "illuminance") ?
 		d3.scaleLog()
 			.domain([min, Math.round(max)])
 			.range([MINIMAL_SIZE, MAXIMAL_SIZE]) :
@@ -340,7 +340,7 @@ function display() {
 			d3.select('#humidity').attr("color", "blue");
 		}
 
-		// change menu state 
+		// change menu state
 		if (menu_state == "sensor") {
 			d3.select('#sensor').attr("color", "black");
 			d3.select('#scheme').attr("color", "grey");
@@ -353,7 +353,7 @@ function display() {
 		var min = getMinValue(dataArray); // minimal value of current sensor
 
 		// scale input data for better representation
-		var hscale = (DISPLAYED_SENSOR == "illuminance") ? 
+		var hscale = (DISPLAYED_SENSOR == "illuminance") ?
 			d3.scaleLog()
 				.domain([min, Math.round(max)])
 				.range([MINIMAL_SIZE, MAXIMAL_SIZE]) :
@@ -369,16 +369,22 @@ function display() {
 				d3.select('#black_white').attr("color", "blue");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "red");
+
+				d3.select('#color_theme_img').attr('src', 'bw.png');
 			} else if (color_scheme == 1) {
 				var arr = whiteBlue(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "blue");
 				d3.select('#infrared').attr("color", "red");
+
+				d3.select('#color_theme_img').attr('src', 'wb.png');
 			} else {
 				var arr = infraRed(hscale(d[DISPLAYED_SENSOR]), hscale(max), hscale(min));
 				d3.select('#black_white').attr("color", "red");
 				d3.select('#blue_white').attr("color", "red");
 				d3.select('#infrared').attr("color", "blue");
+
+				d3.select('#color_theme_img').attr('src', 'infrared.png');
 			}
 
 			return "rgb(" + arr[0] + "," + arr[1] + "," + arr[2] + ")";
@@ -406,18 +412,25 @@ function display() {
 						case "temperature":
 							e = "";
 							entity.select('a-plane').attr("visible", true);
+							d3.selectAll('.degSign').attr("visible", true);
 							break;
 						case "humidity":
 							e = "%";
 							entity.select('a-plane').attr("visible", false);
+							d3.selectAll('.degSign').attr("visible", false);
 							break;
 						case "illuminance":
 							e = "lx";
 							entity.select('a-plane').attr("visible", false);
+							d3.selectAll('.degSign').attr("visible", false);
 							break;
 						default:
 							break;
 					}
+
+					// set min, max values in menu
+					d3.select('#min_value').attr('value',  Math.round(min * 100) / 100 + " " + e);
+					d3.select('#max_value').attr('value', Math.round(max * 100) / 100 + " " + e);
 
 					return Math.round(d[DISPLAYED_SENSOR]* 100) / 100 + " " + e;
 				});
@@ -435,7 +448,7 @@ function display() {
 
 					if (distance <= DISPLAY_DISTANCE)
 						return true;
-					
+
 					return false;
 				});
 
@@ -714,7 +727,7 @@ function getMinValue(dataArray) {
 	return min;
 }
 
-// calculate distance between two points 
+// calculate distance between two points
 function calcDistance(pos1, pos2) {
 	return Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2) + Math.pow(pos2.z - pos1.z, 2));
 }
